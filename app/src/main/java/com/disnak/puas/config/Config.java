@@ -5,9 +5,11 @@ package com.disnak.puas.config;
  */
 
 public class Config {
-    public static final String SERVER_API = "http://192.168.1.29/puas/";
+    public static final String SERVER_API = "http://192.168.1.19/puas/";
 
     public static final String url_soal_view = SERVER_API + "soalView.php";
+    public static final String url_soal_isian = SERVER_API + "soalIsian.php";
+    public static final String url_login = SERVER_API + "login.php";
 
    // public static final String TAG_IMAGES_QUIZ = SERVER_API + "quiz/images/";
 

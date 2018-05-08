@@ -17,4 +17,11 @@ public interface RegisterAPI {
                            @Field("volume") String volume,
                            @Field("nip") String nip,
                            @Field("username") String username);
+
+    @FormUrlEncoded
+    @POST("insertAlasan.php")
+    Call<Value> NEXTISI(@Field("soal") String soal,
+                        @Field("alasan") String alasan,
+                        @Field("nip") String nip,
+                        @Field("username") String username);
 }

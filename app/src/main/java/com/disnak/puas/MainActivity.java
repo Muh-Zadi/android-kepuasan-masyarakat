@@ -9,7 +9,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 
-import com.disnak.puas.quiz.ActivitySoalView;
+import com.disnak.puas.login.Login;
+import com.disnak.puas.quiz.ActivitySoalMultiple;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -24,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
         b.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent panggil = new Intent(MainActivity.this, ActivitySoalView.class);
+                Intent panggil = new Intent(MainActivity.this, Login.class);
                 startActivity(panggil);
             }
         });

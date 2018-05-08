@@ -4,9 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/dsn_bg_quiz"
+    android:background="@drawable/leaf"
+    android:padding="10dp"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.disnak.puas.quiz.ActivitySoalView"
+    tools:context="com.disnak.puas.quiz.ActivitySoalMultiple"
     tools:showIn="@layout/activity_quiz">
 
     <ScrollView
@@ -20,27 +21,42 @@
             android:orientation="vertical">
 
 
-
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
                 <TextView
-                    android:id="@+id/textViewNo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
-                    android:layout_centerHorizontal="true"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:textColor="@color/White" />
-
-                <TextView
                     android:id="@+id/textViewNama"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentTop="true"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="Nama  = "
+                    android:textAllCaps="false"
+                    android:textColor="@color/White" />
+
+                <TextView
+                    android:id="@+id/txtNama"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toRightOf="@+id/textViewNama"
+                    android:textAllCaps="false"
+                    android:textColor="@color/White" />
+
+                <TextView
+                    android:id="@+id/textViewNip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/txtNama"
+                    android:text="Nip       = "
+                    android:textAllCaps="false"
+                    android:textColor="@color/White" />
+
+                <TextView
+                    android:id="@+id/txtNip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/textViewNama"
+                    android:layout_toRightOf="@+id/textViewNip"
+                    android:textAllCaps="false"
                     android:textColor="@color/White" />
             </RelativeLayout>
 
@@ -73,7 +89,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/White"
-                    android:textSize="35sp"
                     android:textStyle="italic" />
 
                 <RadioButton
@@ -81,7 +96,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="#ffffff"
-                    android:textSize="35sp"
                     android:textStyle="italic" />
 
                 <RadioButton
@@ -89,7 +103,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="#ffffff"
-                    android:textSize="35sp"
                     android:textStyle="italic" />
 
                 <RadioButton
@@ -97,7 +110,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="#ffffff"
-                    android:textSize="35sp"
                     android:textStyle="italic" />
 
             </RadioGroup>
@@ -108,15 +120,15 @@
                 android:layout_marginTop="90dp">
 
 
-
                 <Button
                     android:id="@+id/buttonNext"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_alignParentBottom="true"
-                    android:layout_alignParentRight="true"
+                    android:background="@color/orange"
                     android:text="Selanjutnya"
-                    android:textColor="#ffffff" />
+                    android:textAllCaps="false"
+                    android:textColor="@color/White" />
             </RelativeLayout>
         </LinearLayout>
 

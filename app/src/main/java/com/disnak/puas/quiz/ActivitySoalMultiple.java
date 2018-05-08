@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -12,11 +13,11 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Html;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -26,6 +27,7 @@ import com.disnak.puas.R;
 import com.disnak.puas.adapter.ServiceHandler;
 import com.disnak.puas.adapter.Soal;
 import com.disnak.puas.config.Config;
+import com.disnak.puas.login.SessionManager;
 import com.disnak.puas.model.RegisterAPI;
 import com.disnak.puas.model.Value;
 
@@ -34,8 +36,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import butterknife.BindView;
@@ -46,22 +48,20 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class ActivitySoalView extends AppCompatActivity {
+public class ActivitySoalMultiple extends AppCompatActivity {
     private RadioButton radioSexButton;
 
-    int jawabanYgDiPilih[] = null;
-    int jawabanYgBenar[] = null;
-    boolean cekPertanyaan = false;
     int urutanPertanyaan = 0;
     List<Soal> listSoal;
     JSONArray soal = null;
     private ProgressDialog pDialog;
+    SessionManager session;
+    String nama, nip;
 
 
-    @BindView(R.id.textViewNo)
-    TextView txtNama;
     @BindView(R.id.textViewNama)
-    TextView txtNo;
+
+    TextView txtNama;
     @BindView(R.id.textViewSoal)
     TextView txtSoal;
     @BindView(R.id.buttonNext)
@@ -76,6 +76,11 @@ public class ActivitySoalView extends AppCompatActivity {
     RadioButton rb3;
     @BindView(R.id.radio3)
     RadioButton rb4;
+    @BindView(R.id.txtNama)
+    TextView tampilNama;
+    @BindView(R.id.txtNip)
+    TextView tampilNip;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,7 +90,17 @@ public class ActivitySoalView extends AppCompatActivity {
         listSoal = new ArrayList<Soal>();
 
         ButterKnife.bind(this);
+        session = new SessionManager(getApplicationContext());
+        Toast.makeText(getApplicationContext(), "User Login Status: " + session.isLoggedIn(), Toast.LENGTH_LONG).show();
 
+        session.checkLogin();
+        HashMap<String, String> user = session.getUserDetails();
+
+        nama = user.get(SessionManager.KEY_NAME);
+        nip = user.get(SessionManager.KEY_NIP);
+
+        tampilNama.setText(Html.fromHtml(nama));
+        tampilNip.setText(Html.fromHtml(nip));
 
 
         //action
@@ -96,14 +111,15 @@ public class ActivitySoalView extends AppCompatActivity {
                 getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
 
-        if (networkInfo != null && networkInfo.isConnected()){
+        if (networkInfo != null && networkInfo.isConnected()) {
             new GetSoal().execute();
-        }else {
+        } else {
             dialog_error();
         }
 
     }
-    private void dialog_error(){
+
+    private void dialog_error() {
         final AlertDialog.Builder errorDialog = new AlertDialog.Builder(this);
         errorDialog.setTitle("Koneksi Error");
         errorDialog.setMessage("Anda tidak terhubung ke internet");
@@ -111,7 +127,7 @@ public class ActivitySoalView extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int id) {
                 dialog.dismiss();
-                ActivitySoalView.this.finish();
+                ActivitySoalMultiple.this.finish();
             }
         }).show();
     }
@@ -123,8 +139,8 @@ public class ActivitySoalView extends AppCompatActivity {
         protected void onPreExecute() {
             super.onPreExecute();
             // Showing progress dialog
-            pDialog = new ProgressDialog(ActivitySoalView.this);
-            pDialog.setMessage("Mohon tunggu...");
+            pDialog = new ProgressDialog(ActivitySoalMultiple.this);
+            pDialog.setMessage("Loading...");
             pDialog.setCancelable(false);
             pDialog.show();
 
@@ -182,20 +198,17 @@ public class ActivitySoalView extends AppCompatActivity {
             if (pDialog.isShowing())
                 pDialog.dismiss();
 
-            jawabanYgDiPilih = new int[listSoal.size()];
-            Arrays.fill(jawabanYgDiPilih, -1);
-            jawabanYgBenar = new int[listSoal.size()];
-            Arrays.fill(jawabanYgBenar, -1);
             setUpSoal();
         }
     }
 
     private void setUpSoal() {
-        Collections.shuffle(listSoal);
-        tunjukanPertanyaan(0, cekPertanyaan);
+        //MENG-ACAK SOAL
+        // Collections.shuffle(listSoal);
+        tunjukanPertanyaan(0);
     }
 
-    private void tunjukanPertanyaan(int urutan_soal_soal, boolean review) {
+    private void tunjukanPertanyaan(int urutan_soal_soal) {
 
 
         try {
@@ -216,15 +229,6 @@ public class ActivitySoalView extends AppCompatActivity {
             rb3.setText(soal.getC());
             rb4.setText(soal.getD());
 
-            Log.d("", jawabanYgDiPilih[urutan_soal_soal] + "");
-            if (jawabanYgDiPilih[urutan_soal_soal] == 1)
-                rg.check(R.id.radio0);
-            if (jawabanYgDiPilih[urutan_soal_soal] == 2)
-                rg.check(R.id.radio1);
-            if (jawabanYgDiPilih[urutan_soal_soal] == 3)
-                rg.check(R.id.radio2);
-            if (jawabanYgDiPilih[urutan_soal_soal] == 4)
-                rg.check(R.id.radio3);
 
             pasangLabelDanNomorUrut();
 
@@ -234,94 +238,100 @@ public class ActivitySoalView extends AppCompatActivity {
     }
 
 
-    private void aturJawaban_nya() {
-        if (rb1.isChecked())
-            jawabanYgDiPilih[urutanPertanyaan] = 1;
-        if (rb2.isChecked())
-            jawabanYgDiPilih[urutanPertanyaan] = 2;
-        if (rb3.isChecked())
-            jawabanYgDiPilih[urutanPertanyaan] = 3;
-        if (rb4.isChecked())
-            jawabanYgDiPilih[urutanPertanyaan] = 4;
-
-        Log.d("", Arrays.toString(jawabanYgDiPilih));
-        Log.d("", Arrays.toString(jawabanYgBenar));
-
-    }
-
     private OnClickListener klikBerikut = new OnClickListener() {
         public void onClick(View v) {
-            aturJawaban_nya();
-            if ((rb1.isChecked()==false) && (rb2.isChecked()==false) && (rb3.isChecked()==false) && (rb4.isChecked()==false)){
+
+            if ((rb1.isChecked() == false) && (rb2.isChecked() == false) && (rb3.isChecked() == false) && (rb4.isChecked() == false)) {
                 Toast.makeText(getBaseContext(), "Pilih jawaban dulu", Toast.LENGTH_SHORT).show();
-            }
-            else
-            {
+            } else {
                 NEXT();
                 urutanPertanyaan++;
-                if (urutanPertanyaan >= listSoal.size())
-                    urutanPertanyaan = listSoal.size() - 1;
 
-                tunjukanPertanyaan(urutanPertanyaan, cekPertanyaan);
-
+                tunjukanPertanyaan(urutanPertanyaan);
+                if (urutanPertanyaan == (listSoal.size())) {
+                    AlertDialog();
+                }
             }
 
         }
     };
 
 
-
     private void pasangLabelDanNomorUrut() {
-        txtNo.setText("No. " + (urutanPertanyaan + 1)+ " dari "
-                + listSoal.size() + " soal");
+        // txtNo.setText("No. " + (urutanPertanyaan + 1)+ " dari "
+        //    + listSoal.size() + " soal");
     }
-
 
 
     private void NEXT() {
         //Membuat progess dialog
-            pDialog = new ProgressDialog(this);
-            pDialog.setCancelable(false);
-            pDialog.setMessage("Loading...");
-            pDialog.show();
+        pDialog = new ProgressDialog(this);
+        pDialog.setCancelable(false);
+        pDialog.setMessage("Loading...");
+        //pDialog.show();
 
-            //Mencari id radio button
-            int selectedId = rg.getCheckedRadioButtonId();
-            radioSexButton = (RadioButton) findViewById(selectedId);
-            String jawaban = radioSexButton.getText().toString();
-            String soalInsert = txtSoal.getText().toString();
+        //Mencari id radio button
+        int selectedId = rg.getCheckedRadioButtonId();
+        radioSexButton = (RadioButton) findViewById(selectedId);
+        String jawaban = radioSexButton.getText().toString();
+        String soalInsert = txtSoal.getText().toString();
 
-            String username = "andi";
-            String volume ="1";
-            String nip="197612172008011009";
+        String username = nama;
+        String nipUser = nip;
+        String volume = "1";
 
 
-            Retrofit retrofit = new Retrofit.Builder()
-                    .baseUrl(Config.SERVER_API)
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build();
-            RegisterAPI api = retrofit.create(RegisterAPI.class);
-            Call<Value> call = api.btnBerikut(soalInsert, jawaban,volume,nip, username);
-            call.enqueue(new Callback<Value>() {
-                @Override
-                public void onResponse(Call<Value> call, Response<Value> response) {
-                    String value = response.body().getValue();
-                    String message = response.body().getMessage();
-                    pDialog.dismiss();
-                    if (value.equals("1")) {
-                        Toast.makeText(ActivitySoalView.this, message, Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(ActivitySoalView.this, message, Toast.LENGTH_LONG).show();
-                    }
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(Config.SERVER_API)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        RegisterAPI api = retrofit.create(RegisterAPI.class);
+        Call<Value> call = api.btnBerikut(soalInsert, jawaban, volume, nipUser, username);
+        call.enqueue(new Callback<Value>() {
+            @Override
+            public void onResponse(Call<Value> call, Response<Value> response) {
+                String value = response.body().getValue();
+                String message = response.body().getMessage();
+                pDialog.dismiss();
+                if (value.equals("1")) {
+                    //Toast.makeText(ActivitySoalMultiple.this, message, Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(ActivitySoalMultiple.this, message, Toast.LENGTH_LONG).show();
                 }
+            }
 
-                @Override
-                public void onFailure(Call<Value> call, Throwable t) {
-                    t.printStackTrace();
-                    pDialog.dismiss();
-                    Toast.makeText(ActivitySoalView.this, "Jaringan Error", Toast.LENGTH_LONG).show();
-                }
-            });
+            @Override
+            public void onFailure(Call<Value> call, Throwable t) {
+                t.printStackTrace();
+                pDialog.dismiss();
+                Toast.makeText(ActivitySoalMultiple.this, "Jaringan Error", Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
+    private void AlertDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("LANJUTKAN")
+                .setCancelable(false).setPositiveButton("OK",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog,
+                                        int id) {
+                        Intent next = new Intent(ActivitySoalMultiple.this, ActivitySoalIsian.class);
+                        startActivity(next);
+                    }
+                }).show();
+    }
+
+    @Override
+    public void onBackPressed() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Selesaikan pertanyaan dulu")
+                .setCancelable(false).setPositiveButton("OK",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog,
+                                        int id) {
+                        dialog.cancel();
+                    }
+                }).show();
+    }
 }
